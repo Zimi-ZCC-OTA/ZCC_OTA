@@ -1,0 +1,53 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Sync to GCS
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main  ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - uses: actions/checkout@v2
+    - run: | 
+          rsync -av ./ ../excluded/ --exclude=.*
+          
+    # Copy to zimi-dev gcs
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: zimi-dev
+        service_account_key: ${{ secrets.gcp_credentials }}
+        export_default_credentials: true
+        
+    - name: remove zimi fw folder using gsutil
+      run: gsutil -m rm -r gs://zimi-dev-test-cdn-bucket/zcc/* 2> /dev/null || true
+
+    - name: copy to gcs tempfolder using gsutil
+      run: gsutil -m cp -r ../excluded/. gs://zimi-dev-test-cdn-bucket/zcc
+        
+
+    # Copy to zimi-production gcs
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: zimi-production
+        service_account_key: ${{ secrets.gcp_credentials_production }}
+        export_default_credentials: true
+        
+    - name: remove zimi fw folder using gsutil
+      run: gsutil -m rm -r gs://zimi-production-ota-cdn-bucket/zcc/* 2> /dev/null || true
+
+    - name: copy to gcs tempfolder using gsutil
+      run: gsutil -m cp -r ../excluded/. gs://zimi-production-ota-cdn-bucket/zcc      

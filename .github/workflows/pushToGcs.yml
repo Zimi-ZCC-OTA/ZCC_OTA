@@ -25,7 +25,7 @@ jobs:
           
     # Copy to zimi-dev gcs
     - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@master
+      uses: google-github-actions/setup-gcloud@v0
       with:
         project_id: zimi-dev
         service_account_key: ${{ secrets.gcp_credentials }}
@@ -40,7 +40,7 @@ jobs:
 
     # Copy to zimi-production gcs
     - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@master
+      uses: google-github-actions/setup-gcloud@v0
       with:
         project_id: zimi-production
         service_account_key: ${{ secrets.gcp_credentials_production }}
